@@ -142,7 +142,7 @@ impl Interface {
         todo!()
     }
 
-    pub fn get_ipv4(&self) -> io::Result<Ipv4Addr> {
+    pub fn ipv4(&self) -> io::Result<Ipv4Addr> {
         let socket = unsafe { socket(libc::AF_INET, libc::SOCK_DGRAM, 0) };
         if socket == -1 {
             return Err(io::Error::last_os_error());
@@ -168,7 +168,7 @@ impl Interface {
         Ok(Ipv4Addr::from(ip))
     }
 
-    pub fn get_netmask(&self) -> io::Result<Ipv4Addr> {
+    pub fn netmask(&self) -> io::Result<Ipv4Addr> {
         let socket = unsafe { socket(libc::AF_INET, libc::SOCK_DGRAM, 0) };
         if socket == -1 {
             return Err(io::Error::last_os_error());
@@ -194,7 +194,7 @@ impl Interface {
         Ok(Ipv4Addr::from(ip))
     }
 
-    pub fn get_broadcast(&self) -> io::Result<Ipv4Addr> {
+    pub fn broadcast(&self) -> io::Result<Ipv4Addr> {
         let socket = unsafe { socket(libc::AF_INET, libc::SOCK_DGRAM, 0) };
         if socket == -1 {
             return Err(io::Error::last_os_error());
@@ -224,7 +224,7 @@ impl Interface {
         todo!()
     }
 
-    pub fn get_name(&self) -> &str {
+    pub fn name(&self) -> &str {
         CStr::from_bytes_until_nul(unsafe { slice::from_raw_parts(self.ifr_name.as_ptr() as *const u8, self.ifr_name.len()) }).unwrap().to_str().unwrap()
     }
 

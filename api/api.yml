@@ -1,0 +1,95 @@
+openapi: 3.0.3
+info:
+  title: OpenNetworkDevice
+  description: |-
+    This is the API documentation for OpenNetworkDevice. OND is fully manageable via the built-in Rest API.
+  license:
+    name: GNU General Public License v3.0
+    url: https://www.gnu.org/licenses/gpl-3.0.html
+  version: 0.0.1
+paths:
+  /conf/if:
+    get:
+      description: Get all interfaces on device
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Interface'
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Interface'
+components:
+  schemas:
+    Interface:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: uint32
+          description: The NIC-Interface ID
+          example: 1
+        name:
+          type: string
+          description: The NIC-Interface name
+          example: ens160
+        state:
+          type: string
+          description: Is the link/line protocol up
+          enum:
+            - up
+            - lower-up
+            - down
+          example: up
+        mac:
+          type: string
+          description: The mac-address of the interface
+          example: 0c:25:fc:dd:00:00
+        ipv4:
+          type: string
+          description: The IPv4 address of the interface
+          example: 10.0.0.1
+        netmask:
+          type: string
+          description: The netmask of the interface
+          example: 255.255.255.0
+        broadcast:
+          type: string
+          description: The broadcast address of the interface
+          example: 10.0.0.254
+        sub-interfaces:
+          type: array
+          xml:
+            name: SubInterfaces
+          items:
+            $ref: '#/components/schemas/SubInterface'
+      xml:
+        name: Interface
+    SubInterface:
+      type: object
+      properties:
+        vlan-id:
+          type: integer
+          format: uint16
+          description: The VLAN of the sub interface (IEEE 802.1Q)
+          example: 10
+        ipv4:
+          type: string
+          description: The IPv4 address of the interface
+          example: 10.0.10.1
+        netmask:
+          type: string
+          description: The netmask of the interface
+          example: 255.255.255.0
+        broadcast:
+          type: string
+          description: The broadcast address of the interface
+          example: 10.0.10.254
+      xml:
+        name: SubInterface
