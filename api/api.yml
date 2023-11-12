@@ -7,9 +7,20 @@ info:
     name: GNU General Public License v3.0
     url: https://www.gnu.org/licenses/gpl-3.0.html
   version: 0.0.1
+tags:
+  - name: interface
+    description: Everything directly interface related
+  - name: sub-interface
+    description: Everything related to 802.1Q VLAN-Interfaces
+  - name: ipv4
+    description: Everything Ipv4 related.
+  - name: routing
+    description: Everything related to static routes
 paths:
   /conf/if:
     get:
+      tags:
+        - interface
       description: Get all interfaces on device
       responses:
         200:
@@ -25,9 +36,80 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Interface'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        403:
+          $ref: '#/components/responses/PrivilegeError'
   /conf/if/{name}:
     get:
+      tags:
+        - interface
       description: Get the specified interface
+      parameters:
+        - name: name
+          in: path
+          description: The name of the interface
+          required: true
+          schema:
+            type: string
+            example: ens160
+        - name: physical
+          in: query
+          required: false
+          schema:
+            type: string
+            example: 0c:25:fc:dd:00:00
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Interface'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Interface'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        403:
+          $ref: '#/components/responses/PrivilegeError'
+    patch:
+      tags:
+        - interface
+      description: Get the specified interface
+      parameters:
+        - name: name
+          in: path
+          description: The name of the interface
+          required: true
+          schema:
+            type: string
+            example: ens160
+        - name: physical
+          in: query
+          required: false
+          schema:
+            type: string
+            example: 0c:25:fc:dd:00:00
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Interface'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Interface'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        403:
+          $ref: '#/components/responses/PrivilegeError'
+  /conf/if/{name}/sub:
+    get:
+      tags:
+        - sub-interface
+      description: Get the specified sub-interface
       parameters:
         - name: name
           in: path
@@ -46,8 +128,23 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Interface'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        403:
+          $ref: '#/components/responses/PrivilegeError'
+
+    post:
+      tags:
+        - sub-interface
+      responses:
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        403:
+          $ref: '#/components/responses/PrivilegeError'
   /conf/if/{name}/ipv4:
     get:
+      tags:
+        - ipv4
       description: Get the ipv4 configuration from the specified interface
       parameters:
         - name: name
@@ -67,7 +164,13 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Ipv4Address'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        403:
+          $ref: '#/components/responses/PrivilegeError'
     post:
+      tags:
+        - ipv4
       description: Edit the ipv4 configuration of the specified interface
       parameters:
         - name: name
@@ -78,13 +181,13 @@ paths:
             type: string
             example: ens160
         - name: address
-          in: header
+          in: query
           required: true
           schema:
             type: string
             example: 10.0.0.4
         - name: suffix
-          in: header
+          in: query
           required: true
           schema:
             type: integer
@@ -93,8 +196,125 @@ paths:
       responses:
         200:
           description: successful operation
-  /conf/route:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ipv4Address'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Ipv4Address'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        403:
+          $ref: '#/components/responses/PrivilegeError'
+    patch:
+      tags:
+        - ipv4
+      description: Update the ipv4 configuration of the specified interface
+      parameters:
+        - name: name
+          in: path
+          description: The name of the interface
+          required: true
+          schema:
+            type: string
+            example: ens160
+        - name: address
+          in: query
+          required: false
+          schema:
+            type: string
+            example: 10.0.0.4
+        - name: suffix
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: uint8
+            example: 24
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ipv4Address'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Ipv4Address'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        403:
+          $ref: '#/components/responses/PrivilegeError'
+    put:
+      tags:
+        - ipv4
+      description: Overwrite the ipv4 configuration of the specified interface
+      parameters:
+        - name: name
+          in: path
+          description: The name of the interface
+          required: true
+          schema:
+            type: string
+            example: ens160
+        - name: address
+          in: query
+          required: true
+          schema:
+            type: string
+            example: 10.0.0.4
+        - name: suffix
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: uint8
+            example: 24
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ipv4Address'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Ipv4Address'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        403:
+          $ref: '#/components/responses/PrivilegeError'
+    delete:
+      tags:
+        - ipv4
+      description: Delete the ipv4 configuration of the specified interface
+      parameters:
+        - name: name
+          in: path
+          description: The name of the interface
+          required: true
+          schema:
+            type: string
+            example: ens160
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ipv4Address'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Ipv4Address'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        403:
+          $ref: '#/components/responses/PrivilegeError'
+  /conf/routing:
     get:
+      tags:
+        - routing
       description: Get all the routes and their metadata
       responses:
         200:
@@ -110,8 +330,14 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Route'
-  /conf/route/{route-id}:
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        403:
+          $ref: '#/components/responses/PrivilegeError'
+  /conf/routing/route/{route-id}:
     get:
+      tags:
+        - routing
       description: Get the specified route
       parameters:
         - name: route-id
@@ -131,7 +357,13 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Route'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        403:
+          $ref: '#/components/responses/PrivilegeError'
     post:
+      tags:
+        - routing
       description: Get the specified route
       parameters:
         - name: route-id
@@ -142,32 +374,32 @@ paths:
             type: integer
             example: 1
         - name: address
-          in: header
+          in: query
           required: true
           schema:
             type: string
             example: 10.0.0.4
         - name: suffix
-          in: header
+          in: query
           required: true
           schema:
             type: integer
             format: uint8
             example: 24
         - name: next
-          in: header
+          in: query
           required: true
           schema:
             type: string
             example: ens160
         - name: ad
-          in: header
+          in: query
           required: false
           schema:
             type: integer
             example: 1
         - name: tag
-          in: header
+          in: query
           required: false
           schema:
             type: integer
@@ -175,8 +407,22 @@ paths:
       responses:
         200:
           description: successful operation
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        403:
+          $ref: '#/components/responses/PrivilegeError'
 
 components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      name: X-API-KEY
+      in: header
+  responses:
+    UnauthorizedError:
+      description: API key is missing or invalid
+    PrivilegeError:
+      description: API key does not have clearance to access or modify the requested resource
   schemas:
     Interface:
       type: object
@@ -190,6 +436,11 @@ components:
           type: string
           description: The NIC-Interface name
           example: ens160
+        vlan-id:
+          type: integer
+          format: uint16
+          description: The VLAN of the sub interface (IEEE 802.1Q)
+          example: null
         state:
           type: string
           description: Is the link/line protocol up
@@ -198,38 +449,15 @@ components:
             - lower-up
             - down
           example: up
-        physical-address:
+        physical:
           type: string
           description: The mac-address of the interface
           example: 0c:25:fc:dd:00:00
         ipv4:
           type: object
           $ref: '#/components/schemas/Ipv4Address'
-        dot1Q:
-          type: boolean
-          description: Is Dot1Q encapsulation enabled
-          example: true
-        sub-interfaces:
-          type: array
-          xml:
-            name: SubInterfaces
-          items:
-            $ref: '#/components/schemas/SubInterface'
       xml:
         name: Interface
-    SubInterface:
-      type: object
-      properties:
-        vlan-id:
-          type: integer
-          format: uint16
-          description: The VLAN of the sub interface (IEEE 802.1Q)
-          example: 10
-        ipv4:
-          type: object
-          $ref: '#/components/schemas/Ipv4Address'
-      xml:
-        name: SubInterface
     Ipv4Address:
       type: object
       properties:
@@ -295,3 +523,6 @@ components:
           example: null
       xml:
         name: Route
+
+security:
+  - ApiKeyAuth: []

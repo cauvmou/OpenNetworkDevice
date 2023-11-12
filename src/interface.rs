@@ -78,14 +78,6 @@ impl Interface {
         Ok(())
     }
 
-    pub fn set_dot1q(&mut self, dot1q: bool) -> io::Result<()> {
-        todo!()
-    }
-
-    pub fn dot1q(&self) -> io::Result<bool> {
-        todo!()
-    }
-
     pub fn set_physical(&mut self, addr: [u8; 6]) -> io::Result<()> {
         todo!()
     }
