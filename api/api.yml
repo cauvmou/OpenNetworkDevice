@@ -25,6 +25,157 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Interface'
+  /conf/if/{name}:
+    get:
+      description: Get the specified interface
+      parameters:
+        - name: name
+          in: path
+          description: The name of the interface
+          required: true
+          schema:
+            type: string
+            example: ens160
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Interface'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Interface'
+  /conf/if/{name}/ipv4:
+    get:
+      description: Get the ipv4 configuration from the specified interface
+      parameters:
+        - name: name
+          in: path
+          description: The name of the interface
+          required: true
+          schema:
+            type: string
+            example: ens160
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ipv4Address'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Ipv4Address'
+    post:
+      description: Edit the ipv4 configuration of the specified interface
+      parameters:
+        - name: name
+          in: path
+          description: The name of the interface
+          required: true
+          schema:
+            type: string
+            example: ens160
+        - name: address
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 10.0.0.4
+        - name: suffix
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: uint8
+            example: 24
+      responses:
+        200:
+          description: successful operation
+  /conf/route:
+    get:
+      description: Get all the routes and their metadata
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Route'
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Route'
+  /conf/route/{route-id}:
+    get:
+      description: Get the specified route
+      parameters:
+        - name: route-id
+          in: path
+          description: The name of the interface
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Route'
+    post:
+      description: Get the specified route
+      parameters:
+        - name: route-id
+          in: path
+          description: The name of the interface
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - name: address
+          in: header
+          required: true
+          schema:
+            type: string
+            example: 10.0.0.4
+        - name: suffix
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: uint8
+            example: 24
+        - name: next
+          in: header
+          required: true
+          schema:
+            type: string
+            example: ens160
+        - name: ad
+          in: header
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: tag
+          in: header
+          required: false
+          schema:
+            type: integer
+            example: 10
+      responses:
+        200:
+          description: successful operation
+
 components:
   schemas:
     Interface:
@@ -47,22 +198,17 @@ components:
             - lower-up
             - down
           example: up
-        mac:
+        physical-address:
           type: string
           description: The mac-address of the interface
           example: 0c:25:fc:dd:00:00
         ipv4:
-          type: string
-          description: The IPv4 address of the interface
-          example: 10.0.0.1
-        netmask:
-          type: string
-          description: The netmask of the interface
-          example: 255.255.255.0
-        broadcast:
-          type: string
-          description: The broadcast address of the interface
-          example: 10.0.0.254
+          type: object
+          $ref: '#/components/schemas/Ipv4Address'
+        dot1Q:
+          type: boolean
+          description: Is Dot1Q encapsulation enabled
+          example: true
         sub-interfaces:
           type: array
           xml:
@@ -80,16 +226,72 @@ components:
           description: The VLAN of the sub interface (IEEE 802.1Q)
           example: 10
         ipv4:
-          type: string
-          description: The IPv4 address of the interface
-          example: 10.0.10.1
-        netmask:
-          type: string
-          description: The netmask of the interface
-          example: 255.255.255.0
-        broadcast:
-          type: string
-          description: The broadcast address of the interface
-          example: 10.0.10.254
+          type: object
+          $ref: '#/components/schemas/Ipv4Address'
       xml:
         name: SubInterface
+    Ipv4Address:
+      type: object
+      properties:
+        address:
+          type: string
+          description: The IPv4 address
+          example: 10.0.0.1
+        network:
+          type: string
+          description: The IPv4 network address
+          example: 10.0.0.0
+        broadcast:
+          type: string
+          description: The broadcast address for the network
+          example: 10.0.0.254
+        netmask:
+          type: string
+          description: The netmask of the address
+          example: 255.255.255.0
+        suffix:
+          type: integer
+          description: The suffix of the address
+          example: 24
+      xml:
+        name: Ipv4Address
+    Route:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: uint64
+          description: The ID of the route, used to perform configuration
+          example: 1
+        dest:
+          description: The network the route is pointing towards
+          type: object
+          properties:
+            network:
+              type: string
+              description: The IPv4 destination network
+              example: 10.0.0.0
+            netmask:
+              type: string
+              description: The netmask of the network
+              example: 255.255.255.0
+            suffix:
+              type: integer
+              description: The suffix of the network
+              example: 24
+        next-hop:
+          type: string
+          description: The next-hop address/interface of the route
+          example: ens160
+        ad:
+          type: integer
+          format: uint8
+          description: The administrative distance
+          example: 1
+        tag:
+          type: integer
+          format: uint32
+          description: The tag of the route
+          example: null
+      xml:
+        name: Route
