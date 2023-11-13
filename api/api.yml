@@ -31,11 +31,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Interface'
-            application/xml:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Interface'
         401:
           $ref: '#/components/responses/UnauthorizedError'
         403:
@@ -64,9 +59,6 @@ paths:
           description: successful operation
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Interface'
-            application/xml:
               schema:
                 $ref: '#/components/schemas/Interface'
         401:
@@ -98,9 +90,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Interface'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Interface'
         401:
           $ref: '#/components/responses/UnauthorizedError'
         403:
@@ -125,7 +114,50 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Interface'
-            application/xml:
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        403:
+          $ref: '#/components/responses/PrivilegeError'
+    post:
+      tags:
+        - sub-interface
+      description: Creates the specified sub-interface
+      parameters:
+        - name: vlan
+          in: query
+          description: The vlan-id of the new sub-interface
+          required: true
+          schema:
+            type: integer
+            example: 10
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Interface'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        403:
+          $ref: '#/components/responses/PrivilegeError'
+    delete:
+      tags:
+        - sub-interface
+      description: Delete the specified sub-interface
+      parameters:
+        - name: vlan
+          in: query
+          description: The vlan-id of the new sub-interface
+          required: true
+          schema:
+            type: integer
+            example: 10
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Interface'
         401:
@@ -133,14 +165,6 @@ paths:
         403:
           $ref: '#/components/responses/PrivilegeError'
 
-    post:
-      tags:
-        - sub-interface
-      responses:
-        401:
-          $ref: '#/components/responses/UnauthorizedError'
-        403:
-          $ref: '#/components/responses/PrivilegeError'
   /conf/if/{name}/ipv4:
     get:
       tags:
@@ -159,9 +183,6 @@ paths:
           description: successful operation
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Ipv4Address'
-            application/xml:
               schema:
                 $ref: '#/components/schemas/Ipv4Address'
         401:
@@ -200,9 +221,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Ipv4Address'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Ipv4Address'
         401:
           $ref: '#/components/responses/UnauthorizedError'
         403:
@@ -237,9 +255,6 @@ paths:
           description: successful operation
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Ipv4Address'
-            application/xml:
               schema:
                 $ref: '#/components/schemas/Ipv4Address'
         401:
@@ -278,9 +293,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Ipv4Address'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Ipv4Address'
         401:
           $ref: '#/components/responses/UnauthorizedError'
         403:
@@ -304,14 +316,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Ipv4Address'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Ipv4Address'
         401:
           $ref: '#/components/responses/UnauthorizedError'
         403:
           $ref: '#/components/responses/PrivilegeError'
-  /conf/routing:
+  /conf/routing/route:
     get:
       tags:
         - routing
@@ -325,11 +334,53 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Route'
-            application/xml:
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        403:
+          $ref: '#/components/responses/PrivilegeError'
+    post:
+      tags:
+        - routing
+      description: Get the specified route
+      parameters:
+        - name: address
+          in: query
+          required: true
+          schema:
+            type: string
+            example: 10.0.0.4
+        - name: suffix
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: uint8
+            example: 24
+        - name: next
+          in: query
+          required: true
+          schema:
+            type: string
+            example: ens160
+        - name: ad
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: tag
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 10
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Route'
+                $ref: '#/components/schemas/Route'
         401:
           $ref: '#/components/responses/UnauthorizedError'
         403:
@@ -354,14 +405,65 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Route'
-            application/xml:
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        403:
+          $ref: '#/components/responses/PrivilegeError'
+    patch:
+      tags:
+        - routing
+      description: Get the specified route
+      parameters:
+        - name: route-id
+          in: path
+          description: The name of the interface
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - name: address
+          in: query
+          required: false
+          schema:
+            type: string
+            example: 10.0.0.4
+        - name: suffix
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: uint8
+            example: 24
+        - name: next
+          in: query
+          required: false
+          schema:
+            type: string
+            example: ens160
+        - name: ad
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: tag
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 10
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Route'
         401:
           $ref: '#/components/responses/UnauthorizedError'
         403:
           $ref: '#/components/responses/PrivilegeError'
-    post:
+    put:
       tags:
         - routing
       description: Get the specified route
@@ -407,6 +509,33 @@ paths:
       responses:
         200:
           description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        403:
+          $ref: '#/components/responses/PrivilegeError'
+    delete:
+      tags:
+        - routing
+      description: Get the specified route
+      parameters:
+        - name: route-id
+          in: path
+          description: The name of the interface
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
         401:
           $ref: '#/components/responses/UnauthorizedError'
         403:
@@ -454,10 +583,7 @@ components:
           description: The mac-address of the interface
           example: 0c:25:fc:dd:00:00
         ipv4:
-          type: object
           $ref: '#/components/schemas/Ipv4Address'
-      xml:
-        name: Interface
     Ipv4Address:
       type: object
       properties:
@@ -481,8 +607,6 @@ components:
           type: integer
           description: The suffix of the address
           example: 24
-      xml:
-        name: Ipv4Address
     Route:
       type: object
       properties:
@@ -521,8 +645,5 @@ components:
           format: uint32
           description: The tag of the route
           example: null
-      xml:
-        name: Route
-
 security:
   - ApiKeyAuth: []
