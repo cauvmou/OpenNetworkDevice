@@ -130,7 +130,6 @@ impl Interface {
                 4,
             )
         };
-
         Ok(ip)
     }
 
@@ -174,7 +173,20 @@ impl Interface {
         Ok(ip)
     }
 
-    pub fn remove_ipv4(&mut self) -> io::Result<[u8; 4]> {
+    pub fn remove_ipv4(&mut self) -> io::Result<()> {
+        let mut ifreq = self._ifreq();
+        unsafe {
+            ifreq.ifr_ifru.ifru_addr.sa_family = 2;
+            Self::_ioctl(libc::AF_INET, libc::SOCK_DGRAM, 0, libc::SIOCDIFADDR, &mut ifreq)?;
+        }
+        Ok(())
+    }
+
+    pub fn dot1q(&self, vlan_id: u16) -> io::Result<Interface> {
+        todo!()
+    }
+
+    pub fn remove(mut self)-> io::Result<()> {
         todo!()
     }
 

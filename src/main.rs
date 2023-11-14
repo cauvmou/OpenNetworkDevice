@@ -17,6 +17,10 @@ fn main() -> std::io::Result<()> {
     //interface.set_ipv4([192,168,26,219])?;
     //interface.set_netmask([255,255,255,0])?;
     //interface.set_physical([40, 208, 234, 242, 179, 84])?;
+    interface.remove_ipv4()?;
     println!("{interface:?}");
+
+    let a: &'static u32 = Box::leak(Box::new(2));
+
     Ok(())
 }
