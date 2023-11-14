@@ -14,13 +14,13 @@ union __c_anonymous_ifconf {
 #[repr(C)]
 struct ifconf {
     ifc_len: c_int,
-    inner: __c_anonymous_ifconf
+    inner: __c_anonymous_ifconf,
 }
 
 /// This is a safe low level abstraction of a Linux network interface.
 pub struct Interface {
     ifr_name: [c_char; libc::IFNAMSIZ],
-    ifindex: u32
+    ifindex: u32,
 }
 
 impl Interface {
@@ -28,10 +28,10 @@ impl Interface {
         let mut ifconf: ifconf = unsafe { std::mem::zeroed() };
         Self::_ioctl(libc::AF_INET, libc::SOCK_DGRAM, 0, libc::SIOCGIFCONF, &mut ifconf)?;
 
-        ifconf.inner.ifc_req = unsafe { libc::malloc(ifconf.ifc_len as libc::size_t) as *mut ifreq};
+        ifconf.inner.ifc_req = unsafe { libc::malloc(ifconf.ifc_len as libc::size_t) as *mut ifreq };
         Self::_ioctl(libc::AF_INET, libc::SOCK_DGRAM, 0, libc::SIOCGIFCONF, &mut ifconf)?;
 
-        let interfaces = unsafe { Vec::from_raw_parts(ifconf.inner.ifc_req, ifconf.ifc_len as usize, ifconf.ifc_len as usize)};
+        let interfaces = unsafe { Vec::from_raw_parts(ifconf.inner.ifc_req, ifconf.ifc_len as usize, ifconf.ifc_len as usize) };
         let interfaces: Vec<io::Result<Interface>> = interfaces.iter().map(|ifr| Interface::_open(ifr.ifr_name)).collect();
 
         Ok(interfaces)
@@ -60,7 +60,7 @@ impl Interface {
 
         Ok(Self {
             ifr_name,
-            ifindex
+            ifindex,
         })
     }
 
@@ -79,7 +79,17 @@ impl Interface {
     }
 
     pub fn set_physical(&mut self, addr: [u8; 6]) -> io::Result<()> {
-        todo!()
+        let mut ifreq = self._ifreq();
+        unsafe {
+            std::ptr::copy_nonoverlapping(
+                addr.as_ptr(),
+                ifreq.ifr_ifru.ifru_hwaddr.sa_data[2..].as_mut_ptr() as *mut u8,
+                4,
+            );
+            ifreq.ifr_ifru.ifru_hwaddr.sa_family = 0x2;
+        }
+        Self::_ioctl(libc::AF_INET, libc::SOCK_DGRAM, 0, libc::SIOCSIFADDR, &mut ifreq)?;
+        Ok(())
     }
 
     pub fn physical(&self) -> io::Result<[u8; 6]> {
@@ -88,7 +98,7 @@ impl Interface {
         let mut physical: [u8; 6] = [0; 6];
         unsafe {
             std::ptr::copy_nonoverlapping(
-                ifreq.ifr_ifru.ifru_addr.sa_data[0..6].as_ptr(),
+                ifreq.ifr_ifru.ifru_hwaddr.sa_data[0..6].as_ptr(),
                 physical.as_mut_ptr() as *mut c_char,
                 6,
             )
@@ -97,7 +107,17 @@ impl Interface {
     }
 
     pub fn set_ipv4(&mut self, addr: [u8; 4]) -> io::Result<()> {
-        todo!()
+        let mut ifreq = self._ifreq();
+        unsafe {
+            std::ptr::copy_nonoverlapping(
+                addr.as_ptr(),
+                ifreq.ifr_ifru.ifru_addr.sa_data[2..].as_mut_ptr() as *mut u8,
+                4,
+            );
+            ifreq.ifr_ifru.ifru_addr.sa_family = 0x2;
+        }
+        Self::_ioctl(libc::AF_INET, libc::SOCK_DGRAM, 0, libc::SIOCSIFADDR, &mut ifreq)?;
+        Ok(())
     }
 
     pub fn ipv4(&self) -> io::Result<[u8; 4]> {
@@ -110,11 +130,22 @@ impl Interface {
                 4,
             )
         };
+
         Ok(ip)
     }
 
     pub fn set_netmask(&mut self, netmask: [u8; 4]) -> io::Result<()> {
-        todo!()
+        let mut ifreq = self._ifreq();
+        unsafe {
+            std::ptr::copy_nonoverlapping(
+                netmask.as_ptr(),
+                ifreq.ifr_ifru.ifru_netmask.sa_data[2..].as_mut_ptr() as *mut u8,
+                4,
+            );
+            ifreq.ifr_ifru.ifru_netmask.sa_family = 0x2;
+        }
+        Self::_ioctl(libc::AF_INET, libc::SOCK_DGRAM, 0, libc::SIOCSIFNETMASK, &mut ifreq)?;
+        Ok(())
     }
 
     pub fn netmask(&self) -> io::Result<[u8; 4]> {
@@ -122,7 +153,7 @@ impl Interface {
         let mut ip: [u8; 4] = [0; 4];
         unsafe {
             std::ptr::copy_nonoverlapping(
-                ifreq.ifr_ifru.ifru_addr.sa_data[2..=5].as_ptr(),
+                ifreq.ifr_ifru.ifru_netmask.sa_data[2..=5].as_ptr(),
                 ip.as_mut_ptr() as *mut c_char,
                 4,
             )
@@ -135,7 +166,7 @@ impl Interface {
         let mut ip: [u8; 4] = [0; 4];
         unsafe {
             std::ptr::copy_nonoverlapping(
-                ifreq.ifr_ifru.ifru_addr.sa_data[2..=5].as_ptr(),
+                ifreq.ifr_ifru.ifru_broadaddr.sa_data[2..=5].as_ptr(),
                 ip.as_mut_ptr() as *mut c_char,
                 4,
             )
@@ -224,6 +255,11 @@ impl Interface {
 
 impl Debug for Interface {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {{ ipv4: {:?}, netmask: {:?}, broadcast: {:?} }}", self.name(), self.ipv4().unwrap_or_default(), self.netmask().unwrap_or_default(), self.broadcast().unwrap_or_default())
+        write!(f, "{} {{ mac: {:?}, ipv4: {:?}, netmask: {:?}, broadcast: {:?} }}",
+               self.name(),
+               self.physical().unwrap_or_default(),
+               self.ipv4().unwrap_or_default(),
+               self.netmask().unwrap_or_default(),
+               self.broadcast().unwrap_or_default())
     }
 }
